@@ -1,0 +1,81 @@
+A) How to sync source code
+
+repo init -u ssh://10.109.39.8:29418/manifests -b Havana -m Havana_HA.xml --repo-url=ssh://10.109.39.8:29418/repo.git
+repo start Havana_HA --all
+repo sync
+
+B) For Vagrant deployment:
+
+1. vagrant up controller controller2
+2. vagrant ssh controller  --> enter [controller] node
+3. vagrant ssh controller2 --> enter [controller2] node
+4. [controller/controller2] cp -r /vagrant/* ~
+5. [controller] edit ./openstack_havana_deploy/setup.conf for these setting to match your network setting, follow vagrant setting as below
+
+controller_node_ip='10.10.10.21'
+controller_node_active_ip='10.10.10.21'
+controller_node_passive_ip='10.10.10.11'
+controller_node_pub_ip='10.10.20.21'
+controller_node_pub_brex_ip='10.10.20.21'
+network_node_ip='10.10.10.21'
+network_node_ip_datanetwork='10.10.30.21'
+compute_node_ip='10.10.10.31'
+datanetwork_nic_network_node='eth3'
+datanetwork_nic_compute_node='eth2'
+publicnetwork_nic_network_node='eth2'
+management_nic_network_node='eth1'
+ 
+6. [controller2] edit ./openstack_havana_deploy/setup.conf for these setting to match your network setting, follow vagrant setting as below
+
+controller_node_ip='10.10.10.11'
+controller_node_active_ip='10.10.10.21'
+controller_node_passive_ip='10.10.10.11'
+controller_node_pub_ip='10.10.20.11'
+controller_node_pub_brex_ip='10.10.20.11'
+network_node_ip='10.10.10.11'
+network_node_ip_datanetwork='10.10.30.11'
+compute_node_ip='10.10.10.31'
+datanetwork_nic_network_node='eth3'
+datanetwork_nic_compute_node='eth2'
+publicnetwork_nic_network_node='eth2'
+management_nic_network_node='eth1'
+
+5. [controller]  ~/install_ha.sh -c controller -m active
+6. [controller2] ~/install_ha.sh -c controller -m passive
+7. [controller]  wait for the string "HA setup Done"
+8. [controller2] wait for the string "HA setup Done"
+
+
+C) How to monitor
+1. [controller] sudo crm_mon --> it will show HA status, need to wait for all service started on controller
+
+Output:
+
+Resource Group: g_rabbitmq
+     p_ip_rabbitmq      (ocf::heartbeat:IPaddr2):       Started controller
+     p_fs_rabbitmq      (ocf::heartbeat:Filesystem):    Started controller
+     p_rabbitmq (ocf::rabbitmq:rabbitmq-server):        Started controller
+ Master/Slave Set: ms_drbd_mysql [p_drbd_mysql]
+     Masters: [ controller ]
+     Stopped: [ p_drbd_mysql:1 ]
+ Master/Slave Set: ms_drbd_rabbitmq [p_drbd_rabbitmq]
+     Masters: [ controller ]
+     Stopped: [ p_drbd_rabbitmq:1 ]
+ Resource Group: g_mysql
+     p_ip_mysql (ocf::heartbeat:IPaddr2):       Started controller
+     p_ip_public        (ocf::heartbeat:IPaddr2):       Started controller
+     p_api-ip   (ocf::heartbeat:IPaddr2):       Started controller
+     p_fs_mysql (ocf::heartbeat:Filesystem):    Started controller
+     p_mysql    (ocf::heartbeat:mysql): Started controller
+     p_keystone (ocf::openstack:keystone):      Started controller
+     p_glance-api       (ocf::openstack:glance-api):    Started controller
+     p_neutron-server   (ocf::openstack:neutron-server):        Started controller
+     p_neutron-agent-l3 (ocf::openstack:neutron-agent-l3):      Started controller
+     p_neutron-agent-dhcp       (ocf::openstack:neutron-agent-dhcp):    Started controller
+     p_neutron-metadata-agent   (ocf::openstack:neutron-metadata-agent):        Started controller
+     p_nova-api (ocf::openstack:nova-api):      Started controller
+     p_nova-cert        (ocf::openstack:nova-cert):     Started controller
+     p_nova-consoleauth (ocf::openstack:nova-consoleauth):      Started controller
+     p_nova-scheduler   (ocf::openstack:nova-scheduler):        Started controller
+     p_cinder-api       (ocf::openstack:cinder-api):    Started controller
+

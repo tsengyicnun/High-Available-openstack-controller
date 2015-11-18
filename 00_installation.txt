@@ -1,0 +1,112 @@
+OpenStack Havana Installation
+
+(1) (setup.conf, ip) (Optional) Change Public IP
+GRE/VLAN/FLAT mode
+	[controller] modify setup.conf
+		vi 02_openstack_installation/openstack_havana_deploy/setup.conf
+		controller_node_pub_ip='10.10.20.21' -> [your public ip]          ex: 10.109.62.21
+		ext_net_gateway='10.10.20.2'  -> [your public ip gateway]         ex: 10.109.62.254
+		ext_net_start='10.10.20.100'  -> [your public ip start address]   ex: 10.109.62.50
+		ext_net_end='10.10.20.200'    -> [your public ip end address]     ex: 10.109.62.200
+		ext_net_range='10.10.20.0/24' -> [your public subnet]             ex: 10.109.62.0/24
+
+	[compute] 
+	     method 1: copy the "setup.conf" from [controller]
+		
+
+             method 2: start from a new setup.conf
+		modify setup.conf (the same as controller)
+		vi 02_openstack_installation/openstack_havana_deploy/setup.conf
+		controller_node_pub_ip='10.10.20.21' -> [your public ip]          ex: 10.109.62.21
+		ext_net_gateway='10.10.20.2'  -> [your public ip gateway]         ex: 10.109.62.254
+		ext_net_start='10.10.20.100'  -> [your public ip start address]   ex: 10.109.62.50
+		ext_net_end='10.10.20.200'    -> [your public ip end address]     ex: 10.109.62.200
+		ext_net_range='10.10.20.0/24' -> [your public subnet]             ex: 10.109.62.0/24
+
+ 
+(2) (setup.conf, mode) Choose Network Architecture
+	GRE MODE
+		[controller] vi ~/openstack_havana_deploy/setup.conf
+			network_type='gre'
+		[compute] vi ~/openstack_havana_deploy/setup.conf
+			network_type='gre'
+
+	FLAT MODE
+		[controller] vi ~/openstack_havana_deploy/setup.conf
+			network_type='flat'
+		[compute] vi ~/openstack_havana_deploy/setup.conf
+			network_type='flat'
+
+(3) Install OpenStack 
+	(a) Controller (Include Network node)
+		[your NB] ssh ubuntu@10.10.10.21   or logon the controller console
+	
+		# setup locale
+		[controller] sudo locale-gen en_US en_US.UTF-8 zh_TW zh_TW.UTF-8;
+		[controller] sudo dpkg-reconfigure locales
+
+
+		# (nova.conf) install controller and network package
+		[controller] nova
+		Real-Machine: vi ~/openstack_havana_deploy/nova.sh
+		Original
+			Replace "libvirt_type" "libvirt_type=qemu" "${target_file}"
+			->
+			# Replace "libvirt_type" "libvirt_type=qemu" "${target_file}"
+
+		[controller] ~/install.sh -c controller;~/install.sh -c network
+
+		# Create Network
+        		## GRE mode ##
+			[controller] cd ~/openstack_havana_deploy
+			[controller] sudo ./setup.sh create_network
+        
+       			### FLAT mode ##
+			[controller] cd ~/openstack_havana_deploy
+			[controller] sudo ./setup.sh create_flat_network 
+
+	   Check your controller node status
+		0. [controller] source ./openstackrc
+		1. [controller] keystone user-list
+		2. [controller] neutron agent-list
+		3. horizon check: 
+			[Your NB] http://<controller_node_pub_ip>/horizon 
+		ex:
+			http://10.10.20.21/horizon 
+
+	(b) Compute node
+		[your NB] ssh ubuntu@10.10.10.31  or logon the compute console
+
+		# setup locale
+		[compute] sudo locale-gen en_US en_US.UTF-8 zh_TW zh_TW.UTF-8;
+		[compute] sudo dpkg-reconfigure locales
+
+		# install compute package
+		[compute] nova
+		Real-Machine: vi ~/openstack_havana_deploy/nova.sh
+		Original
+			Replace "libvirt_type" "libvirt_type=qemu" "${target_file}"
+			->
+			# Replace "libvirt_type" "libvirt_type=qemu" "${target_file}"
+		[compute] ~/install.sh -c compute
+
+(4) Openstack Setup
+        (a) Security Port Allow: ICMP or SSH 22
+	
+
+Check Guest VM Network
+	(a) Local Network check
+		ping 10.109.39.1 
+
+	(b) Internet check
+		export http_proxy=http://10.110.15.61:8080;
+		export https_proxy=https://10.110.15.61:8080
+
+		// ping Yahoo!
+		wget http://119.160.242.96
+
+
+Troubleshooting
+1. VNC connection fail
+	check [controller] /etc/nova/nova.conf
+	

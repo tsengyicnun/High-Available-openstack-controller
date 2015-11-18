@@ -1,0 +1,5 @@
+Upload the Image
+	source openstackrc
+	glance image-create --name <name> --is-public true --container-format bare --disk-format qcow2 --file <image file>
+
+

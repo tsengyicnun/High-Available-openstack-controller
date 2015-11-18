@@ -1,0 +1,111 @@
+This document descripts how to add a new compute node
+
+Step 1: Compute node
+		- choose RAID 0 (if you have more than one HD), [Partition disks] -> [Configure sowftware RAID]
+		- setup LVM
+			vg:
+			boot_lv : 100MB, EXT4  /BOOT
+			swap:32G,swap
+			root_lv: ext4, /
+
+Step 2: Copy the package
+	plug-in your USB with /work or pull the source
+	[compute] cp -fr work ~
+	[compute] cp ~/work/script/02_openstack_installation ~
+
+Step 3: Setup Physical Network Layout (Ref: doc/2-node-network-layout.png)
+	(a) Physical Network Card Renaming Setup 
+		[compute] rename nic name (start from eth1)
+			sudo vi etc/udev/rules.d/70-persistent-net.rules 	
+
+	(b) Network interfaces Setup
+	GRE/VLAN mode	
+		[compute] interfaces-compute -> /etc/network/interfaces
+		[compute] sudo cp ~/work/script/01_real_machine_setup/2-node/interfaces-compute /etc/network/interfaces
+		
+		# modify the IP address
+		
+		# --------------------------- /etc/network/interfaces ------------------------
+		# MANAGEMENT_NETWORK
+		auto eth1
+		iface eth1 inet static
+		address 10.10.10.31      ----> CHANGE TO YOUR NEW Management IP (ref: ~/work/doc/2-node-network-layout.png)
+		netmask 255.255.255.0
+		broadcast 10.10.10.255
+
+
+		# DATA_NETWORK
+		auto eth2
+		iface eth2 inet static
+		address 10.10.30.31      ----> CHANGE TO YOUR NEW Data IP (ref: ~/work/doc/2-node-network-layout.png)
+		netmask 255.255.255.0
+		broadcast 10.10.30.255
+		# ----------------------------------------------------------------------------
+	
+	FLAT mode
+		# setup compute node network interface		
+		[compute] sudo cp ~/work/script/01_real_machine_setup/2-node/interfaces-compute.flat /etc/network/interfaces
+		
+		# modify the IP address
+		
+		# --------------------------- /etc/network/interfaces ------------------------
+		# MANAGEMENT_NETWORK
+		auto eth1
+		iface eth1 inet static
+		address 10.10.10.31      ----> CHANGE TO YOUR NEW Management IP (ref: ~/work/doc/2-node-network-layout.png)
+		netmask 255.255.255.0
+		broadcast 10.10.10.255
+
+
+		# EXT_NETWORK
+		auto eth2
+		iface eth2 inet static
+		address 10.10.20.31      ----> CHANGE TO YOUR NEW Data IP (ref: ~/work/doc/2-node-network-layout.png)
+		netmask 255.255.255.0
+		broadcast 10.10.20.255
+		# ----------------------------------------------------------------------------
+	Reboot to get effect.
+
+Step 4: Setup.conf
+Method 1: Copy mode
+	copy the "setup.conf" from [controller] node
+	compute_node_ip = '10.10.10.31' -----> CHANGE TO YOUR NEW Management IP 
+
+Method 2: from a new setup.conf
+	vi 02_openstack_installation/openstack_havana_deploy/setup.conf
+	compute_node_ip = '10.10.10.31' -----> CHANGE TO YOUR NEW Management IP 
+
+	Network work archetecture mode
+	GRE MODE
+		[controller] vi ~/openstack_havana_deploy/setup.conf
+			network_type='gre'
+		[compute] vi ~/openstack_havana_deploy/setup.conf
+			network_type='gre'
+		
+	FLAT MODE
+		[controller] vi ~/openstack_havana_deploy/setup.conf
+			network_type='flat'
+		[compute] vi ~/openstack_havana_deploy/setup.conf
+			network_type='flat'
+
+
+Step 5: Compute Node Installation
+	# sync up the time
+	[compute] ssh autobuild@10.10.10.21
+	[controller] date                     # get the date on controller
+	[compute] sudo date --set "<The date string from controller>"
+	
+	# setup locale
+	[compute] sudo locale-gen en_US en_US.UTF-8 zh_TW zh_TW.UTF-8;
+	[compute] sudo dpkg-reconfigure locales
+
+	# [compute] Installation
+	[compute] nova (ONLY for REAL-MACHINE, vagrant installation: no change)
+		Real-Machine: vi ~/openstack_havana_deploy/nova.sh
+		Original
+			Replace "libvirt_type" "libvirt_type=qemu" "${target_file}"
+			->
+			# Replace "libvirt_type" "libvirt_type=qemu" "${target_file}"
+	[compute] ~/install.sh -c compute
+
+

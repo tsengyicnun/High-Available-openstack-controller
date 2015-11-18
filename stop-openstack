@@ -1,0 +1,16 @@
+sudo /etc/init.d/mysql stop
+sudo /etc/init.d/keystone stop
+sudo /etc/init.d/glance-api stop
+cd /etc/init.d/; for i in $( ls neutron-* ); do sudo service $i stop; done
+cd /etc/init.d/; for i in $( ls nova-* ); do sudo service $i stop; done
+cd /etc/init.d/; for i in $( ls cinder-* ); do sudo service $i stop; done
+cd /etc/init.d/; for i in $( ls ceilometer-* ); do sudo service $i stop; done
+sudo /etc/init.d/glance-registry start
+sudo /etc/init.d/nova-conductor start
+sudo /etc/init.d/nova-novncproxy start
+sudo /etc/init.d/neutron-plugin-openvswitch-agent start
+sudo /etc/init.d/neutron-lbaas-agent start
+sudo /etc/init.d/cinder-scheduler start
+sudo /etc/init.d/ceilometer-api start
+sudo /etc/init.d/ceilometer-collector start
+
