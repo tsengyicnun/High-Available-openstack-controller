@@ -1,0 +1,140 @@
+# configuration file for openstack grizzly installation bash script
+
+base_dir=`pwd`
+
+# --------------------------------------------------------------
+# for vagrant enviromnet deployment
+vagrant_debug=1
+local_package=1
+real_machine_deploy=0
+#---------------------------------------------------------------
+# HA setup for openstack installation
+HA_ENABLE=0
+HA_ROLE='none'
+VIP_MySQL='10.10.10.81'
+VIP_RabbitMQ='10.10.10.82'
+VIP_OP='10.10.10.83'
+VIP_Mongo='10.10.10.84'
+VIP_PUBLIC='10.10.20.50'
+corosync_bon_addr='10.10.10.0'
+# ---------------------------------------------------------------
+# choose 1. - 4.
+# 1. all in one node with neutron
+# 2. separated node mode with neutron
+# 3. all in one node with nova-network
+# 4. separated node mode with nova-network
+# ---------------------------------------------------------------
+#
+# ---------------------------------------------------------------
+# 1. if you run on one node (all in one), enable these paramters
+# ---------------------------------------------------------------
+#host_ip='10.10.10.11'
+#host_pub_ip='10.10.20.11'
+#publicnetwork_nic_network_node='eth0'
+# ---------------------------------------------------------------
+# 2. if you run on 3 separated nodes (controller, network, compute),
+#   enable these paramters
+# ---------------------------------------------------------------
+controller_node_ip='10.10.10.21'
+controller_node_active_ip='10.10.10.21'
+controller_node_passive_ip='10.10.10.11'
+controller_node_pub_ip='10.10.20.21'
+controller_node_pub_brex_ip='10.10.20.21'
+network_node_ip='10.10.10.21'
+network_node_ip_datanetwork='10.10.30.21'
+compute_node_ip='10.10.10.31'
+datanetwork_nic_network_node='eth3'
+datanetwork_nic_compute_node='eth2'
+publicnetwork_nic_network_node='eth2'
+management_nic_network_node='eth1'
+# ---------------------------------------------------------------
+# 3. if you run on one node (all in one) with nova-network, enable these paramters
+# ---------------------------------------------------------------
+#host_ip='10.10.10.11'
+#host_pub_ip='10.10.20.11'
+#flat_interface='eth0'
+# ---------------------------------------------------------------
+# 4. if you run on 2 or more  separated nodes (controller, compute)
+#   with nova-network, enable these paramters
+# ---------------------------------------------------------------
+#controller_node_ip='10.10.10.11'
+#controller_node_pub_ip='10.10.20.11'
+#compute_node_ip='10.10.10.21'
+#flat_interface='eth0'
+# ---------------------------------------------------------------
+
+# ---------------------------------------------------------------
+# network component type : 'neutron' or 'nova-network'
+# ---------------------------------------------------------------
+network_component='neutron'
+
+# ---------------------------------------------------------------
+# misc paramters
+# ---------------------------------------------------------------
+# if you don't have disk for cinder, please input '/dev/loopn' for loopback device
+# if you want to use additional real disk, please input '/dev/sdx'.
+#cinder_volume='/dev/sdb'
+cinder_volume='/dev/loop3'
+
+# ---------------------------------------------------------------
+# user / password parameters
+# if you want to change username and password, please change these
+# parameters.
+# ---------------------------------------------------------------
+# database user and password
+mysql_pass='secret'
+db_keystone_user='keystoneuser'
+db_keystone_pass='keystonepass'
+db_glance_user='glanceuser'
+db_glance_pass='glancepass'
+db_neutron_user='neutronuser'
+db_neutron_pass='neutronpass'
+db_nova_user='novauser'
+db_nova_pass='novapass'
+db_cinder_user='cinderuser'
+db_cinder_pass='cinderpass'
+db_ovs_user='ovsuser'
+db_ovs_pass='ovsuser'
+db_heat_user='heatuser'
+db_heat_pass='heatpass'
+db_ceilometer_user='ceilometeruser'
+db_ceilometer_pass='ceilometerpass'
+# keystone username and password
+admin_password='admin'
+service_password='service_pass'
+os_tenant_name='admin'
+os_username='admin'
+os_password='admin'
+service_token='ADMIN'
+service_tenant_name='service'
+demo_user='demo'
+demo_password='demo'
+
+# ---------------------------------------------------------------
+# quantun parameters
+# vm will be on this networks
+# int_net : internal network
+# ext_net : external network (floating ip range)
+# ---------------------------------------------------------------
+# network_type must be 'vlan' or 'gre'
+network_type='flat'
+int_net_gateway='172.24.17.254'
+int_net_range='172.24.17.0/24'
+ext_net_gateway='10.10.20.2'
+ext_net_start='10.10.20.100'
+ext_net_end='10.10.20.200'
+ext_net_range='10.10.20.0/24'
+
+# ---------------------------------------------------------------
+# nova-network parameters
+# ---------------------------------------------------------------
+fixed_range='10.0.0.0/24'
+fixed_start_addr='10.0.0.2'
+floating_range='10.10.20.50/30'
+network_size='256'
+
+# ---------------------------------------------------------------
+# os image paramters
+# ---------------------------------------------------------------
+os_image_url="http://cdn.download.cirros-cloud.net/0.3.2/cirros-0.3.2-x86_64-disk.img"
+os_image_name="Cirros 0.3.2 x86_64"
